@@ -54,15 +54,20 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            widget.songPath.split('/').last,
+            "Currently Song Playign Sreen",
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 20),
-          IconButton(
-            icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow, size: 48),
-            onPressed: _togglePlayPause,
-          ),
+          )
+          // Text(
+          //   widget.songPath.split('/').last,
+          //   textAlign: TextAlign.center,
+          //   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          // ),
+          // SizedBox(height: 20),
+          // IconButton(
+          //   icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow, size: 48),
+          //   onPressed: _togglePlayPause,
+          // ),
         ],
       ),
     );

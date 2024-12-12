@@ -12,6 +12,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<String> _songs = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
 
   @override
   void initState() {
@@ -20,14 +22,37 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _requestPermissionAndLoadFiles() async {
-    if (await Permission.storage.request().isGranted) {
-      _songs = await AudioService.getLocalAudioFiles();
-      setState(() {});
-    } else {
-      // Show a message if permission is denied
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Storage permission is required!')),
-      );
+    try {
+      // Request storage permission
+      PermissionStatus status = await Permission.storage.request();
+      debugPrint("Permission Status: $status");
+
+      if (true) {
+        // Attempt to load songs
+        final songs = await AudioService.getLocalAudioFiles();
+
+        if (songs.isNotEmpty) {
+          setState(() {
+            _songs = songs;
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _errorMessage = 'No audio files found';
+            _isLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          _errorMessage = 'Storage permission denied';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error loading audio files: ${e.toString()}';
+        _isLoading = false;
+      });
     }
   }
 
@@ -35,26 +60,74 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Music Player'),
-      ),
-      body: ListView.builder(
-        itemCount: _songs.length,
-        itemBuilder: (context, index) {
-          final song = _songs[index];
-          return ListTile(
-            leading: Icon(Icons.music_note),
-            title: Text(song.split('/').last), // Display the file name
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NowPlayingScreen(songPath: song),
-                ),
-              );
+        title: const Text('Music Player'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              setState(() {
+                _isLoading = true;
+                _errorMessage = '';
+              });
+              _requestPermissionAndLoadFiles();
             },
-          );
-        },
+          ),
+        ],
       ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage.isNotEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _errorMessage,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _requestPermissionAndLoadFiles,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                )
+              : _songs.isEmpty
+                  ? const Center(
+                      child: Text('No songs found'),
+                    )
+                  : ListView.builder(
+                      itemCount: _songs.length,
+                      itemBuilder: (context, index) {
+                        final song = _songs[index];
+                        return ListTile(
+                          leading: const Icon(Icons.music_note),
+                          title: Text(
+                            song.split('/').last,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            song,
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => NowPlayingScreen(
+                                  songPath: song,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
     );
   }
 }
