@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music/screens/home_screen.dart';
 
 void main() {
   runApp(const MusicPlayer());
@@ -11,14 +12,11 @@ class MusicPlayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Music Player',
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Music Player'),
-        ),
-        body: Center(
-          child: Text('Hello, World!'),
-        ),
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
       ),
+      home: const HomeScreen(),
     );
   }
 }
