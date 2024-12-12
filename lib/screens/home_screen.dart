@@ -18,33 +18,21 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _requestPermissionAndLoadFiles();
+    _loadSongs();
   }
 
-  Future<void> _requestPermissionAndLoadFiles() async {
+  Future<void> _loadSongs() async {
     try {
-      // Request storage permission
-      PermissionStatus status = await Permission.storage.request();
-      debugPrint("Permission Status: $status");
+      final songs = await AudioService.getLocalAudioFiles();
 
-      if (true) {
-        // Attempt to load songs
-        final songs = await AudioService.getLocalAudioFiles();
-
-        if (songs.isNotEmpty) {
-          setState(() {
-            _songs = songs;
-            _isLoading = false;
-          });
-        } else {
-          setState(() {
-            _errorMessage = 'No audio files found';
-            _isLoading = false;
-          });
-        }
+      if (songs.isNotEmpty) {
+        setState(() {
+          _songs = songs;
+          _isLoading = false;
+        });
       } else {
         setState(() {
-          _errorMessage = 'Storage permission denied';
+          _errorMessage = 'No audio files found';
           _isLoading = false;
         });
       }
@@ -69,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 _isLoading = true;
                 _errorMessage = '';
               });
-              _requestPermissionAndLoadFiles();
+              _loadSongs();
             },
           ),
         ],
@@ -87,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: _requestPermissionAndLoadFiles,
+                        onPressed: _loadSongs,
                         child: const Text('Retry'),
                       ),
                     ],
@@ -101,6 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemCount: _songs.length,
                       itemBuilder: (context, index) {
                         final song = _songs[index];
+                        final filepath = song.split("/0/")[1];
                         return ListTile(
                           leading: const Icon(Icons.music_note),
                           title: Text(
@@ -108,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           subtitle: Text(
-                            song,
+                            filepath,
                             style: const TextStyle(
                               color: Colors.grey,
                               fontSize: 12,
