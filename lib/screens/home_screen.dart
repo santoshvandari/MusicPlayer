@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music/screens/now_playing_screen.dart';
 import 'package:music/services/audio_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 
