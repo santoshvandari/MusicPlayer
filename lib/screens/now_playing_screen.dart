@@ -140,6 +140,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             ),
 
             // Slider and Time
+            // Slider and Time
             Expanded(
               flex: 1,
               child: Column(
@@ -151,7 +152,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     activeColor: Colors.white,
                     inactiveColor: Colors.grey,
                     onChanged: (value) {
-                      _audioPlayer.seek(Duration(seconds: value.toInt()));
+                      // Seek to new position
+                      final position = Duration(seconds: value.toInt());
+                      _audioPlayer.seek(position);
+                      setState(() {
+                        _currentPosition = position;
+                      });
                     },
                   ),
                   Padding(
