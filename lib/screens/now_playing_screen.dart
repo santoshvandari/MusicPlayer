@@ -147,17 +147,24 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Slider(
-                    value: _currentPosition.inSeconds.toDouble(),
-                    max: _totalDuration.inSeconds.toDouble(),
+                    value: _totalDuration.inSeconds > 0
+                        ? _currentPosition.inSeconds
+                            .clamp(0, _totalDuration.inSeconds)
+                            .toDouble()
+                        : 0.0,
+                    max: _totalDuration.inSeconds > 0
+                        ? _totalDuration.inSeconds.toDouble()
+                        : 1.0,
                     activeColor: Colors.white,
                     inactiveColor: Colors.grey,
                     onChanged: (value) {
-                      // Seek to new position
-                      final position = Duration(seconds: value.toInt());
-                      _audioPlayer.seek(position);
-                      setState(() {
-                        _currentPosition = position;
-                      });
+                      if (_totalDuration.inSeconds > 0) {
+                        final position = Duration(seconds: value.toInt());
+                        _audioPlayer.seek(position);
+                        setState(() {
+                          _currentPosition = position;
+                        });
+                      }
                     },
                   ),
                   Padding(
