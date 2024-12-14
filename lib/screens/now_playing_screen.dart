@@ -97,7 +97,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   borderRadius: BorderRadius.circular(20),
                   image: DecorationImage(
                     image: AssetImage(
-                        'assets/default_album.jpg'), // Replace with actual album art
+                        'assets/images/default_album.png'), // Replace with actual album art
                     fit: BoxFit.cover,
                   ),
                   boxShadow: [
