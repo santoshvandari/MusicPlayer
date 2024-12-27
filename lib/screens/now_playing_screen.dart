@@ -99,12 +99,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 child: Center(
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 30),
+                    height: 300,
+                    width: 300,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
-                      image: const DecorationImage(
-                        image: AssetImage('assets/images/default_album.png'),
-                        fit: BoxFit.cover,
-                      ),
+                      color: Colors.white24, // Placeholder background
                       boxShadow: [
                         BoxShadow(
                           color: Colors.white.withOpacity(0.3),
@@ -112,6 +111,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                           blurRadius: 20,
                         ),
                       ],
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.music_note,
+                        color: Colors.white,
+                        size: 100,
+                      ),
                     ),
                   ),
                 ),
