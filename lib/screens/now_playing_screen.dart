@@ -23,26 +23,41 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   }
 
   Future<void> _initializeAudio() async {
-    // Play the audio
-    await _audioPlayer.play(DeviceFileSource(widget.songPath));
+    try {
+      // Set the source
+      await _audioPlayer.setSource(DeviceFileSource(widget.songPath));
 
-    // Listen to position changes
-    _audioPlayer.onPositionChanged.listen((Duration position) {
-      setState(() {
-        _currentPosition = position;
+      // Get the duration first
+      final duration = await _audioPlayer.getDuration();
+      if (duration != null) {
+        setState(() {
+          _totalDuration = duration;
+        });
+      }
+
+      // Start playing
+      await _audioPlayer.resume();
+
+      // Listen to position changes
+      _audioPlayer.onPositionChanged.listen((Duration position) {
+        setState(() {
+          _currentPosition = position;
+        });
       });
-    });
 
-    // Listen to duration changes
-    _audioPlayer.onDurationChanged.listen((Duration duration) {
-      setState(() {
-        _totalDuration = duration;
+      // Listen to duration changes
+      _audioPlayer.onDurationChanged.listen((Duration duration) {
+        setState(() {
+          _totalDuration = duration;
+        });
       });
-    });
 
-    setState(() {
-      _isPlaying = true;
-    });
+      setState(() {
+        _isPlaying = true;
+      });
+    } catch (e) {
+      debugPrint('Error initializing audio: $e');
+    }
   }
 
   Future<void> _togglePlayPause() async {
@@ -147,14 +162,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Slider(
-                    value: _totalDuration.inSeconds > 0
-                        ? _currentPosition.inSeconds
-                            .clamp(0, _totalDuration.inSeconds)
-                            .toDouble()
-                        : 0.0,
-                    max: _totalDuration.inSeconds > 0
-                        ? _totalDuration.inSeconds.toDouble()
-                        : 1.0,
+                    value: _currentPosition.inSeconds.toDouble(),
+                    min: 0.0,
+                    max: _totalDuration.inSeconds.toDouble() == 0.0
+                        ? 1.0 // Provide a default max value when duration is 0
+                        : _totalDuration.inSeconds.toDouble(),
                     activeColor: Colors.white,
                     inactiveColor: Colors.grey,
                     onChanged: (value) {
