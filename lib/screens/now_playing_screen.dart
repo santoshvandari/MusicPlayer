@@ -24,10 +24,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   Future<void> _initializeAudio() async {
     try {
-      // Set the source
       await _audioPlayer.setSource(DeviceFileSource(widget.songPath));
 
-      // Get the duration first
       final duration = await _audioPlayer.getDuration();
       if (duration != null) {
         setState(() {
@@ -35,17 +33,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         });
       }
 
-      // Start playing
       await _audioPlayer.resume();
 
-      // Listen to position changes
       _audioPlayer.onPositionChanged.listen((Duration position) {
         setState(() {
           _currentPosition = position;
         });
       });
 
-      // Listen to duration changes
       _audioPlayer.onDurationChanged.listen((Duration duration) {
         setState(() {
           _totalDuration = duration;
@@ -84,190 +79,208 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1D2671), Color(0xFFC33764)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
         ),
-        actions: [
+        child: SafeArea(
+          child: Column(
+            children: [
+              // AppBar
+              _buildAppBar(),
+
+              // Album Art
+              Expanded(
+                flex: 3,
+                child: Center(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 30),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      image: const DecorationImage(
+                        image: AssetImage('assets/images/default_album.png'),
+                        fit: BoxFit.cover,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.3),
+                          spreadRadius: 10,
+                          blurRadius: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Song Information
+              Expanded(
+                flex: 1,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      widget.songPath.split('/').last.replaceAll('.mp3', ''),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Artist Name', // Replace with actual artist
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Slider and Time
+              Expanded(
+                flex: 1,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Slider(
+                      value: _currentPosition.inSeconds.toDouble(),
+                      min: 0.0,
+                      max: _totalDuration.inSeconds.toDouble() == 0.0
+                          ? 1.0
+                          : _totalDuration.inSeconds.toDouble(),
+                      activeColor: Colors.white,
+                      inactiveColor: Colors.white24,
+                      onChanged: (value) {
+                        if (_totalDuration.inSeconds > 0) {
+                          final position = Duration(seconds: value.toInt());
+                          _audioPlayer.seek(position);
+                          setState(() {
+                            _currentPosition = position;
+                          });
+                        }
+                      },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _formatDuration(_currentPosition),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          Text(
+                            _formatDuration(_totalDuration),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Control Buttons
+              Expanded(
+                flex: 1,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.skip_previous,
+                          color: Colors.white, size: 40),
+                      onPressed: () {
+                        // Previous track functionality
+                      },
+                    ),
+                    const SizedBox(width: 20),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.white38,
+                            spreadRadius: 3,
+                            blurRadius: 15,
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          _isPlaying ? Icons.pause : Icons.play_arrow,
+                          color: Colors.black,
+                          size: 50,
+                        ),
+                        onPressed: _togglePlayPause,
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    IconButton(
+                      icon: const Icon(Icons.skip_next,
+                          color: Colors.white, size: 40),
+                      onPressed: () {
+                        // Next track functionality
+                      },
+                    ),
+                  ],
+                ),
+              ),
+
+              // Additional Controls
+              Expanded(
+                flex: 1,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.shuffle, color: Colors.white),
+                      onPressed: () {
+                        // Shuffle functionality
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.repeat, color: Colors.white),
+                      onPressed: () {
+                        // Repeat functionality
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
           IconButton(
-            icon: Icon(Icons.more_vert, color: Colors.white),
+            icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
             onPressed: () {
               // Add more options functionality
             },
           ),
         ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Album Art / Music Visualization
-            Expanded(
-              flex: 3,
-              child: Container(
-                margin: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  image: DecorationImage(
-                    image: AssetImage(
-                        'assets/images/default_album.png'), // Replace with actual album art
-                    fit: BoxFit.cover,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.white24,
-                      spreadRadius: 5,
-                      blurRadius: 20,
-                    )
-                  ],
-                ),
-              ),
-            ),
-
-            // Song Information
-            Expanded(
-              flex: 1,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    widget.songPath.split('/').last.replaceAll('.mp3', ''),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Artist Name', // Replace with actual artist
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Slider and Time
-            // Slider and Time
-            Expanded(
-              flex: 1,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Slider(
-                    value: _currentPosition.inSeconds.toDouble(),
-                    min: 0.0,
-                    max: _totalDuration.inSeconds.toDouble() == 0.0
-                        ? 1.0 // Provide a default max value when duration is 0
-                        : _totalDuration.inSeconds.toDouble(),
-                    activeColor: Colors.white,
-                    inactiveColor: Colors.grey,
-                    onChanged: (value) {
-                      if (_totalDuration.inSeconds > 0) {
-                        final position = Duration(seconds: value.toInt());
-                        _audioPlayer.seek(position);
-                        setState(() {
-                          _currentPosition = position;
-                        });
-                      }
-                    },
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _formatDuration(_currentPosition),
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        Text(
-                          _formatDuration(_totalDuration),
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Control Buttons
-            Expanded(
-              flex: 1,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.skip_previous,
-                        color: Colors.white, size: 40),
-                    onPressed: () {
-                      // Previous track functionality
-                    },
-                  ),
-                  SizedBox(width: 20),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.white38,
-                          spreadRadius: 3,
-                          blurRadius: 15,
-                        )
-                      ],
-                    ),
-                    child: IconButton(
-                      icon: Icon(
-                        _isPlaying ? Icons.pause : Icons.play_arrow,
-                        color: Colors.black,
-                        size: 50,
-                      ),
-                      onPressed: _togglePlayPause,
-                    ),
-                  ),
-                  SizedBox(width: 20),
-                  IconButton(
-                    icon: Icon(Icons.skip_next, color: Colors.white, size: 40),
-                    onPressed: () {
-                      // Next track functionality
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            // Additional Controls
-            Expanded(
-              flex: 1,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.shuffle, color: Colors.white),
-                    onPressed: () {
-                      // Shuffle functionality
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.repeat, color: Colors.white),
-                    onPressed: () {
-                      // Repeat functionality
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
