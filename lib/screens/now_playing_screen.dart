@@ -300,10 +300,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            onPressed: () {},
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.more_vert, color: Colors.white),
+          //   onPressed: () {},
+          // ),
         ],
       ),
     );
