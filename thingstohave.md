@@ -1,8 +1,6 @@
 ey enhancements to implement:
 
 Advanced Audio Features:
-
-
 Background playback
 Playlist management
 Queue system
@@ -11,8 +9,6 @@ Equalizer support
 
 
 UI/UX Improvements:
-
-
 Mini player
 Animated transitions
 Bottom navigation
@@ -21,8 +17,6 @@ Search functionality
 
 
 File Management:
-
-
 Metadata extraction
 Album art loading
 Playlist import/export
@@ -30,8 +24,6 @@ File organization
 
 
 Modern Features:
-
-
 Dark/light themes
 Offline mode
 Last played tracking

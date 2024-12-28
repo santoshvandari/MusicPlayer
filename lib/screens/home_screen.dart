@@ -175,7 +175,10 @@ class _HomeScreenState extends State<HomeScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => NowPlayingScreen(songPath: song),
+                builder: (context) => NowPlayingScreen(
+                  songs: _songs,
+                  initialIndex: index,
+                ),
               ),
             );
           },
