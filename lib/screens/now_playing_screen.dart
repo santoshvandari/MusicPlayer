@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:audio_service/audio_service.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   final List<String> songs;
