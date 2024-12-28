@@ -13,6 +13,9 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> _songs = [];
   bool _isLoading = true;
   String _errorMessage = '';
+  TextEditingController _searchController = TextEditingController();
+  List<String> _filteredSongs = [];
+  bool _showSearchBox = false;
 
   @override
   void initState() {
@@ -26,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (songs.isNotEmpty) {
         setState(() {
           _songs = songs;
+          _filteredSongs = songs; // Initialize with all songs
           _isLoading = false;
         });
       } else {
@@ -40,6 +44,16 @@ class _HomeScreenState extends State<HomeScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  // Filter songs based on the search query
+  void _filterSongs(String query) {
+    final filteredSongs = _songs.where((song) {
+      return song.toLowerCase().contains(query.toLowerCase());
+    }).toList();
+    setState(() {
+      _filteredSongs = filteredSongs;
+    });
   }
 
   @override
@@ -62,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ? _buildLoadingState()
                     : _errorMessage.isNotEmpty
                         ? _buildErrorState()
-                        : _songs.isEmpty
+                        : _filteredSongs.isEmpty
                             ? _buildEmptyState()
                             : _buildSongList(),
               ),
@@ -87,17 +101,52 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.white,
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: () {
-              setState(() {
-                _isLoading = true;
-                _errorMessage = '';
-              });
-              _loadSongs();
-            },
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.search, color: Colors.white),
+                onPressed: () {
+                  setState(() {
+                    _showSearchBox = !_showSearchBox; // Toggle search box
+                  });
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                onPressed: () {
+                  setState(() {
+                    _isLoading = true;
+                    _errorMessage = '';
+                  });
+                  _loadSongs();
+                },
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBox() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: TextField(
+        controller: _searchController,
+        style: const TextStyle(color: Colors.white),
+        onChanged: (query) {
+          _filterSongs(query); // Filter songs on input change
+        },
+        decoration: InputDecoration(
+          hintText: 'Search...',
+          hintStyle: const TextStyle(color: Colors.white),
+          filled: true,
+          fillColor: Colors.white.withOpacity(0.2),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide.none,
+          ),
+        ),
       ),
     );
   }
@@ -163,61 +212,69 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildSongList() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: _songs.length,
-      itemBuilder: (context, index) {
-        final song = _songs[index];
-        final filepath = song.split('/0/')[1];
+    return Column(
+      children: [
+        // Conditionally show the search box
+        if (_showSearchBox) _buildSearchBox(),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16.0),
+            itemCount: _filteredSongs.length,
+            itemBuilder: (context, index) {
+              final song = _filteredSongs[index];
+              final filepath = song.split('/0/')[1];
 
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => NowPlayingScreen(
-                  songs: _songs,
-                  initialIndex: index,
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NowPlayingScreen(
+                        songs: _filteredSongs,
+                        initialIndex: index,
+                      ),
+                    ),
+                  );
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 16.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.white.withOpacity(0.1),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 6,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ListTile(
+                    leading: const Icon(Icons.music_note, color: Colors.white),
+                    title: Text(
+                      song.split('/').last,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(
+                      filepath,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: const Icon(Icons.play_arrow, color: Colors.white),
+                  ),
                 ),
-              ),
-            );
-          },
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 16.0),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.white.withOpacity(0.1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 6,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: ListTile(
-              leading: const Icon(Icons.music_note, color: Colors.white),
-              title: Text(
-                song.split('/').last,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Text(
-                filepath,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 12,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-              trailing: const Icon(Icons.play_arrow, color: Colors.white),
-            ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 }
