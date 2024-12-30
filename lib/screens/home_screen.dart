@@ -34,7 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       } else {
         setState(() {
-          _errorMessage = 'No audio files found';
+          _errorMessage =
+              'No audio files found.Please check access to audio files.';
           _isLoading = false;
         });
       }
@@ -177,7 +178,13 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: _loadSongs,
+            onPressed: () {
+              setState(() {
+                _isLoading = true;
+                _errorMessage = '';
+              });
+              _loadSongs();
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.redAccent,
               shape: RoundedRectangleBorder(
