@@ -25,8 +25,8 @@ This is a simple Flutter Application that allows users to play audio tracks from
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd <repository-directory>
+   git clone https://github.com/santoshvandari/MusicPlayer.git
+   cd MusicPlayer
    ```
 
 2. Install dependencies:
